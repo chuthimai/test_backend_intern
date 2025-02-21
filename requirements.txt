@@ -8,4 +8,4 @@ PyJWT==2.10.1
 djangorestframework_simplejwt==5.4.0
 drf-spectacular==0.28.0
 drf-spectacular-sidecar==2025.2.1
-WhiteNoise==2.0.6
+WhiteNoise==6.9.0

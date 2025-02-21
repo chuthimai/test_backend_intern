@@ -25,6 +25,8 @@ SECRET_KEY = 'django-insecure-*16^0&k23erv&!vr*i#yf#(g7@t$e8=8(rra(38)_t)j6a-hj)
 DEBUG = False
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Đảm bảo thư mục hợp lệ
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
 
 
 ALLOWED_HOSTS = ["*"]
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
