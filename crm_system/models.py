@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 
 class Customer(models.Model):
@@ -52,4 +53,4 @@ class TaskBoard(models.Model):
                 f"status={self.status}, "
                 f"assigned_to={self.assigned_to}"
                 f")"
-        )
+                )

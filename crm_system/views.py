@@ -1,37 +1,80 @@
-from rest_framework import viewsets, filters
+import hashlib
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password, check_password
+from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from .models import Customer, Product, Employee, TaskBoard
-from .serializers import CustomerSerializer, ProductSerializer, EmployeeSerializer, TaskBoardSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
-class CustomerViewSet(viewsets.ModelViewSet):
-    queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+@api_view(['POST', 'GET'])
+def register_view(request):
+    if request.method == "GET":
+        return render(request, "register.html")
+
+    username = request.data.get("username")
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if User.objects.filter(email=email).exists():
+        messages.error(request, "Email already exists!")
+        return render(request, "register.html")
+
+    hashed_password = make_password(password)  # Mã hóa mật khẩu đúng cách
+
+    user = User.objects.create_user(username=username, email=email, password=hashed_password)
+
+    if user:
+        messages.success(request, "Registration successful!")
+        return redirect("login")
+
+    return render(request, "register.html")
 
 
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
+@api_view(['POST', 'GET'])
+def login_view(request):
+    if request.method == "GET":
+        return render(request, "login.html")
+
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    user = User.objects.filter(email=email).first()
+
+    if user and check_password(password, user.password):
+        tokens = get_tokens_for_user(user)
+        response = redirect("home")
+        response.set_cookie("access_token", tokens["access"])  # Lưu token vào cookie
+        return response
+
+    messages.error(request, "Invalid email or password")
+    return render(request, "login.html")
 
 
-class TaskBoardViewSet(viewsets.ModelViewSet):
-    queryset = TaskBoard.objects.all()
-    serializer_class = TaskBoardSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['status', 'assigned_to__name']
+@api_view(["POST"])
+def logout_view(request):
+    try:
+        refresh_token = request.data.get("refresh")
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Đưa token vào danh sách blacklist
 
-    @action(detail=False, methods=['get'])
-    def filter_by_status(self, request):
-        status = request.query_params.get('status', None)
-        if status:
-            tasks = self.queryset.filter(status=status)
-        else:
-            tasks = self.queryset
-        serializer = self.get_serializer(tasks, many=True)
-        return Response(serializer.data)
+        response = redirect("login")
+        response.delete_cookie("access_token")  # Xóa token khỏi cookie
+        response.delete_cookie("refresh_token")
+        return response
+    except Exception:
+        return Response(
+            {"error": "Invalid token"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
