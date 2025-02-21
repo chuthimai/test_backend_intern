@@ -22,7 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*16^0&k23erv&!vr*i#yf#(g7@t$e8=8(rra(38)_t)j6a-hj)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Đảm bảo thư mục hợp lệ
+
 
 ALLOWED_HOSTS = ["*"]
 
@@ -152,7 +155,7 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SWAGGER_UI_SETTINGS': {
-        'persistAuthorization': True,  # ✅ Lưu token khi làm mới trang
+        'persistAuthorization': True,  # Lưu token khi làm mới trang
     },
     'COMPONENT_SPLIT_REQUEST': True,
     'SECURITY_DEFINITIONS': {
