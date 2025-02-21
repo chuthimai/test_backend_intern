@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
@@ -147,11 +147,25 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "CRM System API",
-    "DESCRIPTION": "API documentation for CRM System",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,  # Tắt schema hiển thị trong Swagger UI
+    'TITLE': 'CRM System API',
+    'DESCRIPTION': 'API documentation for CRM System',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,  # ✅ Lưu token khi làm mới trang
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SECURITY_DEFINITIONS': {
+        'JWT': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+            'description': "Token format: `Bearer <JWT_TOKEN>`",
+        }
+    },
+    'SECURITY': [{'JWT': []}],  # ✅ Áp dụng bảo mật JWT cho toàn bộ API
 }
 
+CORS_ALLOW_CREDENTIALS = True  # Cho phép gửi cookie và token
 
 

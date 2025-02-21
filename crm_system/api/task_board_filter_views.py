@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -27,7 +27,10 @@ class TaskBoardFilterAPIView(APIView):
                 type=int
             )
         ],
-        responses={200: TaskBoardSerializer(many=True)}
+        responses={
+            200: TaskBoardSerializer(many=True),
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def get(self, request):
         status_filter = request.GET.get("status", None)

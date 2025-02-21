@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,7 +22,10 @@ class TaskBoardAPIView(APIView):
                 type=int
             )
         ],
-        responses={200: TaskBoardSerializer(many=True)}
+        responses={
+            200: TaskBoardSerializer(many=True),
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def get(self, request, task_id=None):
         if task_id:
@@ -37,7 +40,10 @@ class TaskBoardAPIView(APIView):
         summary="Tạo mới một task",
         description="Thêm một task mới vào hệ thống.",
         request=TaskBoardSerializer,
-        responses={201: TaskBoardSerializer}
+        responses={
+            201: TaskBoardSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def post(self, request):
         task = TaskBoardDAO.create_task(**request.data)
@@ -63,7 +69,10 @@ class TaskBoardAPIView(APIView):
             )
         ],
         request=TaskBoardSerializer,
-        responses={200: TaskBoardSerializer}
+        responses={
+            200: TaskBoardSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def put(self, request, task_id):
         task = TaskBoardDAO.update_task(task_id, **request.data)
@@ -88,7 +97,10 @@ class TaskBoardAPIView(APIView):
                 type=int
             )
         ],
-        responses={204: None}
+        responses={
+            204: None,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def delete(self, request, task_id):
         if TaskBoardDAO.delete_task(task_id):

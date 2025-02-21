@@ -1,9 +1,9 @@
-import hashlib
 from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -18,13 +18,25 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
 
-
+@extend_schema(
+    summary="Trang chủ API",
+    description="API này có thể được truy cập mà không cần đăng nhập.",
+    responses={200: OpenApiResponse(description="Welcome to API demo.")}
+)
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def home(request):
     return HttpResponse("Welcome to API demo.")
 
 
+@extend_schema(
+    summary="Đăng ký tài khoản",
+    description="API này cho phép tạo tài khoản mới mà không cần đăng nhập.",
+    responses={
+        200: OpenApiResponse(description="Registration successful!"),
+        400: OpenApiResponse(description="Email already exists!")
+    }
+)
 @api_view(['POST', 'GET'])
 @permission_classes([AllowAny])
 def register_view(request):
@@ -49,6 +61,15 @@ def register_view(request):
     return render(request, "register.html")
 
 
+@extend_schema(
+    summary="Đăng nhập (Không cần xác thực)",
+    description="POST: API này xác thực người dùng và trả về JWT token."
+                "\n GET: Trả về trang login",
+    responses={
+        200: OpenApiResponse(description="Trả về access_token và refresh_token"),
+        401: OpenApiResponse(description="Invalid email or password"),
+    }
+)
 @api_view(['POST', 'GET'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -62,14 +83,23 @@ def login_view(request):
 
     if user and check_password(password, user.password):
         tokens = get_tokens_for_user(user)
-        response = redirect("swagger-ui")
-        response.set_cookie("access_token", tokens["access"])  # Lưu token vào cookie
-        return response
+        return Response({
+            "access_token": str(tokens["access"]),
+            "refresh_token": str(tokens["refresh"])
+        })
 
     messages.error(request, "Invalid email or password")
     return render(request, "login.html")
 
 
+@extend_schema(
+    summary="Đăng xuất",
+    description="API này đăng xuất người dùng bằng cách blacklist refresh token.",
+    responses={
+        200: OpenApiResponse(description="Đã đăng xuất thành công."),
+        400: OpenApiResponse(description="Invalid token")
+    }
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def logout_view(request):

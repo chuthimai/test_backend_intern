@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,7 +22,10 @@ class CustomerAPIView(APIView):
                 type=int
             )
         ],
-        responses={200: CustomerSerializer(many=True)}
+        responses={
+            200: CustomerSerializer(many=True),
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        },
     )
     def get(self, request, customer_id=None):
         if customer_id:
@@ -37,7 +40,10 @@ class CustomerAPIView(APIView):
         summary="Thêm mới khách hàng",
         description="Tạo một khách hàng mới với thông tin: tên, email, số điện thoại, địa chỉ.",
         request=CustomerSerializer,
-        responses={201: CustomerSerializer}
+        responses={
+            201: CustomerSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def post(self, request):
         name = request.data.get("name")
@@ -76,7 +82,10 @@ class CustomerAPIView(APIView):
             )
         ],
         request=CustomerSerializer,
-        responses={200: CustomerSerializer}
+        responses={
+            200: CustomerSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def put(self, request, customer_id):
         name = request.data.get("name")
@@ -113,7 +122,10 @@ class CustomerAPIView(APIView):
                 type=int
             )
         ],
-        responses={204: None}
+        responses={
+            204: None,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def delete(self, request, customer_id):
         is_delete = CustomerDAO.delete_customer(customer_id)

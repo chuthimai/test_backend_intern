@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,7 +22,10 @@ class ProductAPIView(APIView):
                 type=int
             )
         ],
-        responses={200: ProductSerializer(many=True)}
+        responses={
+            200: ProductSerializer(many=True),
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def get(self, request, product_id=None):
         if product_id:
@@ -57,7 +60,10 @@ class ProductAPIView(APIView):
             )
         ],
         request=ProductSerializer,
-        responses={200: ProductSerializer}
+        responses={
+            200: ProductSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def put(self, request, product_id):
         product = ProductDAO.update_product(product_id, **request.data)
@@ -76,7 +82,10 @@ class ProductAPIView(APIView):
                 type=int
             )
         ],
-        responses={204: None}
+        responses={
+            204: None,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def delete(self, request, product_id):
         if ProductDAO.delete_product(product_id):

@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,7 +22,10 @@ class EmployeeAPIView(APIView):
                 type=int
             )
         ],
-        responses={200: EmployeeSerializer(many=True)}
+        responses={
+            200: EmployeeSerializer(many=True),
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def get(self, request, employee_id=None):
         if employee_id:
@@ -37,7 +40,10 @@ class EmployeeAPIView(APIView):
         summary="Thêm mới nhân viên",
         description="Tạo một nhân viên mới với thông tin cần thiết.",
         request=EmployeeSerializer,
-        responses={201: EmployeeSerializer}
+        responses={
+            201: EmployeeSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def post(self, request):
         employee = EmployeeDAO.create_employee(**request.data)
@@ -63,7 +69,10 @@ class EmployeeAPIView(APIView):
             )
         ],
         request=EmployeeSerializer,
-        responses={200: EmployeeSerializer}
+        responses={
+            200: EmployeeSerializer,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def put(self, request, employee_id):
         employee = EmployeeDAO.update_employee(employee_id, **request.data)
@@ -88,7 +97,10 @@ class EmployeeAPIView(APIView):
                 type=int
             )
         ],
-        responses={204: None}
+        responses={
+            204: None,
+            401: OpenApiResponse(description="Unauthorized - Yêu cầu token hợp lệ"),
+        }
     )
     def delete(self, request, employee_id):
         if EmployeeDAO.delete_employee(employee_id):
