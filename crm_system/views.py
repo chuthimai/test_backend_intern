@@ -1,10 +1,12 @@
 import hashlib
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -17,6 +19,12 @@ def get_tokens_for_user(user):
     }
 
 
+@permission_classes([AllowAny])
+def home(request):
+    return HttpResponse("Welcome to API demo.")
+
+
+@permission_classes([AllowAny])
 @api_view(['POST', 'GET'])
 def register_view(request):
     if request.method == "GET":
@@ -41,6 +49,7 @@ def register_view(request):
     return render(request, "register.html")
 
 
+@permission_classes([AllowAny])
 @api_view(['POST', 'GET'])
 def login_view(request):
     if request.method == "GET":
@@ -53,7 +62,7 @@ def login_view(request):
 
     if user and check_password(password, user.password):
         tokens = get_tokens_for_user(user)
-        response = redirect("home")
+        response = redirect("schema")
         response.set_cookie("access_token", tokens["access"])  # Lưu token vào cookie
         return response
 

@@ -6,4 +6,6 @@ urllib3==2.3.0
 sqlparse==0.5.3
 PyJWT==2.10.1
 djangorestframework_simplejwt==5.4.0
-Werkzeug==1.0.1
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2025.2.1
+

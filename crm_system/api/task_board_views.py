@@ -1,3 +1,5 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +9,21 @@ from crm_system.serializers import TaskBoardSerializer
 
 
 class TaskBoardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Lấy danh sách task hoặc task cụ thể",
+        description="Lấy danh sách tất cả các task hoặc task theo `task_id`.",
+        parameters=[
+            OpenApiParameter(
+                name="task_id",
+                description="ID của task cần lấy thông tin",
+                required=False,
+                type=int
+            )
+        ],
+        responses={200: TaskBoardSerializer(many=True)}
+    )
     def get(self, request, task_id=None):
         if task_id:
             task = TaskBoardDAO.get_task_by_id(task_id)
@@ -16,6 +33,12 @@ class TaskBoardAPIView(APIView):
             serializer = TaskBoardSerializer(tasks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Tạo mới một task",
+        description="Thêm một task mới vào hệ thống.",
+        request=TaskBoardSerializer,
+        responses={201: TaskBoardSerializer}
+    )
     def post(self, request):
         task = TaskBoardDAO.create_task(**request.data)
         if task:
@@ -28,6 +51,20 @@ class TaskBoardAPIView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    @extend_schema(
+        summary="Cập nhật thông tin một task",
+        description="Cập nhật thông tin của task theo `task_id`.",
+        parameters=[
+            OpenApiParameter(
+                name="task_id",
+                description="ID của task cần cập nhật",
+                required=True,
+                type=int
+            )
+        ],
+        request=TaskBoardSerializer,
+        responses={200: TaskBoardSerializer}
+    )
     def put(self, request, task_id):
         task = TaskBoardDAO.update_task(task_id, **request.data)
         if task:
@@ -40,6 +77,19 @@ class TaskBoardAPIView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    @extend_schema(
+        summary="Xóa một task",
+        description="Xóa task theo `task_id` khỏi hệ thống.",
+        parameters=[
+            OpenApiParameter(
+                name="task_id",
+                description="ID của task cần xóa",
+                required=True,
+                type=int
+            )
+        ],
+        responses={204: None}
+    )
     def delete(self, request, task_id):
         if TaskBoardDAO.delete_task(task_id):
             return Response(
