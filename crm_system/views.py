@@ -19,13 +19,14 @@ def get_tokens_for_user(user):
     }
 
 
+@api_view(["GET"])
 @permission_classes([AllowAny])
 def home(request):
     return HttpResponse("Welcome to API demo.")
 
 
-@permission_classes([AllowAny])
 @api_view(['POST', 'GET'])
+@permission_classes([AllowAny])
 def register_view(request):
     if request.method == "GET":
         return render(request, "register.html")
@@ -38,19 +39,18 @@ def register_view(request):
         messages.error(request, "Email already exists!")
         return render(request, "register.html")
 
-    hashed_password = make_password(password)  # Mã hóa mật khẩu đúng cách
-
-    user = User.objects.create_user(username=username, email=email, password=hashed_password)
+    user = User.objects.create_user(username=username, email=email, password=password)
 
     if user:
         messages.success(request, "Registration successful!")
         return redirect("login")
 
+    messages.error(request, "Registration failed!")
     return render(request, "register.html")
 
 
-@permission_classes([AllowAny])
 @api_view(['POST', 'GET'])
+@permission_classes([AllowAny])
 def login_view(request):
     if request.method == "GET":
         return render(request, "login.html")
@@ -62,7 +62,7 @@ def login_view(request):
 
     if user and check_password(password, user.password):
         tokens = get_tokens_for_user(user)
-        response = redirect("schema")
+        response = redirect("swagger-ui")
         response.set_cookie("access_token", tokens["access"])  # Lưu token vào cookie
         return response
 
@@ -71,6 +71,7 @@ def login_view(request):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def logout_view(request):
     try:
         refresh_token = request.data.get("refresh")
